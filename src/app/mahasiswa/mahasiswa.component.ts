@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Renderer2 } from '@angular/core';
+import { AfterViewInit, Component, OnInit, Renderer2 } from '@angular/core';
 import { HeaderComponent } from "../header/header.component";
 import { SidebarComponent } from "../sidebar/sidebar.component";
 import { FooterComponent } from "../footer/footer.component";
@@ -12,12 +12,20 @@ declare const $: any;
   templateUrl: './mahasiswa.component.html',
   styleUrl: './mahasiswa.component.css'
 })
-export class MahasiswaComponent implements AfterViewInit{
+export class MahasiswaComponent implements OnInit, AfterViewInit{
   data: any;
   table1: any;
 
-constructor(private httpClient: HttpClient) {}
+constructor(private httpClient: HttpClient, private renderer : Renderer2) {}
+  ngOnInit(): void {
+    throw new Error('Method not implemented.');
+  }
+ 
    ngAfterViewInit(): void {
+    this.renderer.removeClass(document.body,"sidebar-open");
+    this.renderer.addClass(document.body, "sidebar-closed");
+    this.renderer.addClass(document.body,"sidebar-collapse");
+
     this.table1 = $("#table1").DataTable();
 
     this.bindMahasiswa();
@@ -25,11 +33,11 @@ constructor(private httpClient: HttpClient) {}
    
    bindMahasiswa(): void {
     this.httpClient.get("https://stmikpontianak.cloud/011100862/tampilMahasiswa.php").subscribe((data:any)=>{
-      console.log(data);
+      console.table(data);
 
       this.table1.clear();
 
-      data.array.forEach((element:any) => {
+      data.forEach((element:any) => {
         var tempatTanggalLahir = element.TempatLahir + "," + element.TanggalLahir;
 
         var row = [
@@ -40,13 +48,13 @@ constructor(private httpClient: HttpClient) {}
           element.JP,
           element.Alamat,
           element.StatusNikah,
-          element.TahunMasuk,
+          element.TahunMasuk
         ]
 
         this.table1.row.add(row);  
       });
 
-      this.table1.ddraw(false);
+      this.table1.draw(false);
     });
    }
-}
+  }
