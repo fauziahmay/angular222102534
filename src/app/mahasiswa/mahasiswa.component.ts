@@ -14,9 +14,7 @@ declare const $: any;
   styleUrl: './mahasiswa.component.css'
 })
 export class MahasiswaComponent implements AfterViewInit{
-showTambahModal() {
-throw new Error('Method not implemented.');
-}
+
   data: any;
   table1: any;
 
@@ -56,5 +54,77 @@ throw new Error('Method not implemented.');
       this.table1.draw(false);
     });
   }
-  
+  showTambahModal(): void{
+    $("#tambahModal").modal();
+  }
+  postRecord(): void{
+    
+    var nim = $("#nimText").val();
+    var nama = $("#namaText").val();
+    var jenisKelamin = $("#jenisKelaminSelect").val();
+    var tempatLahir = $("#tempatLahirText").val();
+    var tanggalLahir = $("#tanggalLahirText").val();
+    var jp = $("#jpSelect").val();
+    var alamat = $("#alamatText").val();
+    var statusNikah = $("#statusNikahSelect").val();
+    var tahunMasuk = $("#tahunMasukText").val();
+    
+
+    if (nim.length == 0){
+      alert("NIM Belum Di Isi");
+      return;
+    } 
+
+    if (nama.length == 0){
+      alert("Nama Belum Di Isi");
+      return;
+    }
+
+    if (tempatLahir.length == 0){
+      alert("Tempat Lahir Belum Di Isi");
+      return;
+    }
+    if (tanggalLahir.length == 0){
+      alert("Tanggal Lahir Belum Di Isi");
+      return;
+    }
+    if (alamat.length == 0){
+      alert("Alamat Belum Di Isi");
+      return;
+    }
+    if (tahunMasuk.length == 0){
+      alert("Tahun Masuk Belum Di Isi");
+      return;
+    }
+    
+    nim = encodeURIComponent(nim);
+    nama = encodeURIComponent(nama);
+    jenisKelamin = encodeURIComponent(jenisKelamin);
+    tempatLahir = encodeURIComponent(tempatLahir);
+    tanggalLahir = encodeURIComponent(tanggalLahir);
+    jp = encodeURIComponent(jp);
+    alamat = encodeURIComponent(alamat);
+    statusNikah = encodeURIComponent(statusNikah);
+    tahunMasuk = encodeURIComponent(tahunMasuk);
+    
+    var url="https://stmikpontianak.cloud/011100862/tampilMahasiswa.php" + 
+    "?nim=" +nim +
+    "&nama=" +nama +
+    "&jenisKelamin=" +jenisKelamin +
+    "&tempatLahir=" +tempatLahir;
+    "&tanggalLahir=" +tanggalLahir +
+    "&jp=" +jp +
+    "&alamat=" +alamat +
+    "&statusNikah=" +statusNikah +
+    "&tahunMasuk=" +tahunMasuk +
+
+    this.httpClient.get(url)
+    .subscribe((data: any) => {
+      console.log(data); // Debugging: lihat respons di konsol
+      alert(data.status + "-->" + data.message);
+
+      this.bindMahasiswa();
+      $("#tambahModal").modal("hide");
+  });
+  }
 }
