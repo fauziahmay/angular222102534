@@ -32,29 +32,35 @@ export class MahasiswaComponent implements AfterViewInit {
   bindMahasiswa(): void {
     this.httpClient.get("https://stmikpontianak.cloud/011100862/tampilMahasiswa.php").subscribe((data: any) => {
       console.log(data);
-
+  
       this.table1.clear();
-
+  
       data.forEach((element: any) => {
         const tempatTanggalLahir = element.TempatLahir + ", " + element.tempatTanggalLahir;
-
+  
+        // Menentukan icon berdasarkan jenis kelamin
+        const jenisKelaminIcon = element.JenisKelamin.toLowerCase() === 'laki laki'
+          ? '<i class="fa fa-mars text-primary"></i> Laki-Laki'
+          : '<i class="fa fa-venus text-danger"></i> Perempuan';
+  
         const row = [
           element.NIM,
           element.Nama,
-          element.JenisKelamin,
+          jenisKelaminIcon,
           tempatTanggalLahir,
           element.JP,
           element.Alamat,
           element.StatusNikah,
           element.TahunMasuk
         ];
-
+  
         this.table1.row.add(row);
       });
-
+  
       this.table1.draw(false);
     });
   }
+  
 
   showTambahModal(): void {
     $("#tambahModal").modal();
