@@ -16,6 +16,7 @@ declare const $: any;
 })
 export class ForexComponent implements AfterViewInit {
   private _table1: any;
+  lastUpdated: string = "";
 
   constructor(private renderer: Renderer2, private httpClient: HttpClient) {}
 
@@ -28,7 +29,11 @@ export class ForexComponent implements AfterViewInit {
       "columnDefs": [
         {
           "targets": 2,
-          "className": "text-right"
+          "className": "text-left" // Nama Mata Uang rata kiri
+        },
+        {
+          "targets": 3,
+          "className": "text-right" // Kurs rata kanan
         }
       ]
     });
@@ -37,37 +42,48 @@ export class ForexComponent implements AfterViewInit {
 
   bindTable1(): void {
     console.log("bindTable1()");
-    const url = "https://openexchangerates.org/api/latest.json?app_id=077bdeacc65e4a98bef6c50247fcbff6";
+    const ratesUrl = "https://openexchangerates.org/api/latest.json?app_id=077bdeacc65e4a98bef6c50247fcbff6";
+    const currenciesUrl = "https://openexchangerates.org/api/currencies.json";
 
-    this.httpClient.get(url).subscribe((data: any) => {
-      const rates = data.rates;
-      console.log(rates);
+    this.lastUpdated = new Date().toLocaleString(); // Set last updated time when page loads
 
-      let index = 1;
+    // Fetch currency names
+    this.httpClient.get(currenciesUrl).subscribe((currencies: any) => {
+      // Fetch exchange rates
+      this.httpClient.get(ratesUrl).subscribe((data: any) => {
+        const rates = data.rates;
+        this.lastUpdated = new Date(data.timestamp * 1000).toLocaleString(); // Update the last updated time from API
+        let index = 1;
 
-      for (const currency in rates) {
-        if (rates.hasOwnProperty(currency)) {
-          const rate = rates.IDR / rates[currency];
-          const formatRate = formatCurrency(rate, "en-US", "", currency);
-          console.log(`${currency} : ${formatRate}`);
+        // Iterate over the rates and add rows to the table
+        for (const currency in rates) {
+          if (rates.hasOwnProperty(currency)) {
+            const currencyName = currencies[currency] || "Unknown"; // Fetch the currency name
+            const rate = rates.IDR / rates[currency]; // Calculate rate
+            const formatRate = formatCurrency(rate, "en-US", "", currency); // Format rate
 
-          const row = [index++, currency, formatRate];
-          this._table1.row.add(row);
+            console.log(`${currency}: ${currencyName}: ${formatRate}`);
+
+            // Add row to the table
+            const row = [index++, currency, currencyName, formatRate];
+            this._table1.row.add(row);
+          }
         }
-      }
 
-      this._table1.draw(false);
+        // Draw table
+        this._table1.draw(false);
 
-      const hkd = rates.IDR / rates.HKD;
-      const hkdFormatted = formatCurrency(hkd, "en-US", "", "HKD");
-      console.log("HKD: " + hkdFormatted);
+        // Additional example: Add specific currencies like HKD and BTC if needed
+        const hkd = rates.IDR / rates.HKD;
+        const hkdFormatted = formatCurrency(hkd, "en-US", "", "HKD");
+        this._table1.row.add([index++, "HKD", "Hong Kong Dollar", hkdFormatted]);
 
-      const btc = rates.IDR / rates.BTC;
-      const btcFormatted = formatCurrency(btc, "en-US", "", "BTC");
+        const btc = rates.IDR / rates.BTC;
+        const btcFormatted = formatCurrency(btc, "en-US", "", "BTC");
+        this._table1.row.add([index++, "BTC", "Bitcoin", btcFormatted]);
 
-      this._table1.row.add([index++, "HKD", hkdFormatted]);
-      this._table1.row.add([index++, "BTC", btcFormatted]);
-      this._table1.draw(false);
+        this._table1.draw(false);
+      });
     });
   }
 }
